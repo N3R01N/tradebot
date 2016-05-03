@@ -1,0 +1,23 @@
+{
+  "name": "tradebot",
+  "version": "1.0.0",
+  "description": "bitcoin ether trade bot",
+  "main": "index.js",
+  "dependencies": {
+    "kraken-api": "^0.1.8"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/N3R01N/tradebot.git"
+  },
+  "author": "n3r01n",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/N3R01N/tradebot/issues"
+  },
+  "homepage": "https://github.com/N3R01N/tradebot#readme"
+}
