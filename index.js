@@ -3,7 +3,7 @@ let KrakenClient = require('kraken-api');
 let kraken = new KrakenClient('api_key', 'api_secret');
 
 // hier verwende ich die von mir umgebaute version von reinforce
-let reinforce = require('./lib/reinforcenode');
+let reinforce = require('reinforcenode');
 let Agent = reinforce.DQNAgent;
 console.log('agent :',Agent);
 
