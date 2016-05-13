@@ -8,7 +8,22 @@ let tradeAgent = new Agent(env, spec);
 let client = null;
 let count = 0;
 let interval;
+
+
+
+/**
+  - train the agent
+  - send data to client if connected
+      data = {
+        state: the state our world is in (array full of float numbers)
+        reward: the current reward the agent got
+        action: the action the actor made (a number between 0 and whatever env.getNumStates() returns)
+      }
+*/
 let trainAgent = () => {
+  // for now 400 iterations are ok for testing
+  // remove this check to go infinate!
+  // warning this COULD possibly go wrong ! ;)
   if (count++ < 400) {
     env.getState((state) => {
       let action = tradeAgent.act(state);
@@ -55,10 +70,9 @@ wss.on('connection', (ws) => {
   ws.on('message', (message) => {
     console.log('received: %s', message);
   });
-  ws.send('something');
 });
 server.on('request', app);
 server.listen(port, () => {
-  console.log('Listening on ' + server.address()
+  console.log('Listening on -> localhost:' + server.address()
     .port);
 });

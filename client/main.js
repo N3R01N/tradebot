@@ -14,15 +14,26 @@
 /*
  * LINE GRAPH PART
  */
-let lineGraphFactory = (height, width, containerId, initData) => {
+let lineGraphFactory = (title, dimensions, containerId, initData) => {
+  // start date for the time scale of the graph.
   const STARTDATE = new Date();
+
+  let margin = {top: 20, right: 20, bottom: 30, left: 50};
+
+  let width = dimensions[0] - margin.left - margin.right;
+  let height = dimensions[1] - margin.top - margin.bottom;
+
+  let color = d3.scale.category10();
   // append svg to the given container id
-  let svg = d3.select(containerId)
-    .append('svg')
-    .attr({
-      height: height,
-      width: width
-    });
+  let container = d3.select(containerId)
+    .append('div')
+    .classed('graphcontainer', true);
+  container.append('h3').html(title);
+  let svg = container.append('svg')
+    .attr('width', width + margin.left + margin.right)
+    .attr('height', height + margin.top + margin.bottom)
+    .append('g')
+      .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
   //scales
   let xScale = d3.time.scale()
     .range([0, width]);
@@ -35,7 +46,7 @@ let lineGraphFactory = (height, width, containerId, initData) => {
   let yAxis = d3.svg.axis()
     .scale(yScale)
     .ticks(4)
-    .orient('right');
+    .orient('left');
   //line function see: http://bl.ocks.org/mbostock/1166403
   let line = d3.svg.line()
     .interpolate('monotone')
@@ -74,8 +85,13 @@ let lineGraphFactory = (height, width, containerId, initData) => {
     iData.forEach((d, idx) => {
       graphData.push([]);
       svg.append('path')
+        .classed('line', true)
         .classed('line' + idx, true)
-        .classed('line', true);
+        .attr({
+          stroke: (data) => {
+            return color(idx);
+          }
+        });
     });
     updateData(initData);
   };
@@ -124,16 +140,43 @@ ws.onclose = (event) => {
     .classed('connected', false);
   console.log('disconnected ', event);
 };
-let graph = null;
 let getBidAskPrice = (data) => {
   return [data.state[0], data.state[1]];
 };
+let getBidAskVolume = (data) => {
+  return [data.state[2], data.state[3]];
+};
+// this is where the magic happens
+let graph = null;
+let volumeGraph = null;
+let rewardGraph = null;
 ws.onmessage = (message) => {
+  /* world snap-shot :
+   [
+    currentBidPrice,
+    currentAskPrice,
+    currentBidVolume,
+    currentAskVolume,
+    changeBidPrice,
+    changeAskPrice,
+    changeBidVolume,
+    changeAskVolume
+  ]
+  */
   let data = JSON.parse(message.data);
   if (graph === null) {
-    graph = lineGraphFactory(480, 960, '#graph', getBidAskPrice(data));
+    // lineGraphFactory function takes a title, dimensions[width, height], containerId, data[datum1, datum1, datumN,...]
+    // returns a graph Object with a single method update which takes a data array like: data[datum1, datum1, datumN,...]
+    // example price graph
+    graph = lineGraphFactory('Price Graph', [560, 240], '#graph', getBidAskPrice(data));
+    // example volume graph
+    volumeGraph = lineGraphFactory('Volume Graph',[560, 240], '#graph', getBidAskVolume(data));
+    // example reward graph (notice also only one line/datapoint possible)
+    rewardGraph = lineGraphFactory('Reward Graph',[560, 120], '#graph', [data.reward]);
   } else {
     graph.update(getBidAskPrice(data));
+    volumeGraph.update(getBidAskVolume(data));
+    rewardGraph.update([data.reward]);
   }
 };
 ws.onerror = (error) => {
